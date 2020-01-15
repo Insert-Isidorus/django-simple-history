@@ -24,6 +24,7 @@ installed_apps = [
     'django.contrib.auth',
     'django.contrib.sessions',
     'django.contrib.admin',
+    'django.contrib.messages',
 ]
 
 DEFAULT_SETTINGS = dict(
@@ -38,7 +39,7 @@ DEFAULT_SETTINGS = dict(
             'ENGINE': 'django.db.backends.sqlite3',
         }
     },
-    MIDDLEWARE_CLASSES=[
+    MIDDLEWARE=[
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
@@ -49,6 +50,7 @@ DEFAULT_SETTINGS = dict(
         'OPTIONS': {
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ]
         },
     }],
