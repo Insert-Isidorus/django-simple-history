@@ -8,10 +8,11 @@ from django.conf import settings
 from django.contrib import admin
 from django.db import models, router
 from django.db.models.fields.proxy import OrderWrt
-from django.utils import six
-from django.utils.encoding import python_2_unicode_compatible, smart_text
+from django.urls import reverse
+from django.utils.encoding import smart_text
+from django.utils.text import format_lazy
 from django.utils.timezone import now
-from django.utils.translation import string_concat, ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _
 
 from . import exceptions
 from .manager import HistoryDescriptor
@@ -46,7 +47,7 @@ class HistoricalRecords(object):
             excluded_fields = []
         self.excluded_fields = excluded_fields
         try:
-            if isinstance(bases, six.string_types):
+            if isinstance(bases, str):
                 raise TypeError
             self.bases = tuple(bases)
         except TypeError:
@@ -135,8 +136,7 @@ class HistoricalRecords(object):
             attrs['Meta'].db_table = self.table_name
         name = 'Historical%s' % model._meta.object_name
         registered_models[model._meta.db_table] = model
-        return python_2_unicode_compatible(
-            type(str(name), self.bases, attrs))
+        return type(str(name), self.bases, attrs)
 
     def fields_included(self, model):
         fields = []
@@ -156,7 +156,7 @@ class HistoricalRecords(object):
             try:
                 field.remote_field = copy.copy(field.remote_field)
             except AttributeError:
-                field.rel = copy.copy(field.rel)
+                field.remote_field = copy.copy(field.remote_field)
             if isinstance(field, OrderWrt):
                 # OrderWrt is a proxy field, switch to a plain IntegerField
                 field.__class__ = models.IntegerField
@@ -173,13 +173,13 @@ class HistoricalRecords(object):
                 if getattr(old_field, 'db_column', None):
                     field_arguments['db_column'] = old_field.db_column
 
-                # If old_field.rel.to is 'self' then we have a case where object has a foreign key
-                # to itself. In this case we update need to set the `to` value of the field
+                # If old_field.remote_field.model is 'self' then we have a case where object has a foreign key
+                # to itself. In this case we update need to set the `model` value of the field
                 # to be set to a model. We can use the old_field.model value.
-                if isinstance(old_field.rel.to, str) and old_field.rel.to == 'self':
+                if isinstance(old_field.remote_field.model, str) and old_field.remote_field.model == 'self':
                     object_to = old_field.model
                 else:
-                    object_to = old_field.rel.to
+                    object_to = old_field.remote_field.model
 
                 field = FieldType(
                     object_to,
@@ -204,14 +204,13 @@ class HistoricalRecords(object):
 
         user_model = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
-        @models.permalink
         def revert_url(self):
             """URL for this change in the default admin site."""
             opts = model._meta
             app_label, model_name = opts.app_label, opts.model_name
-            return ('%s:%s_%s_simple_history' %
+            return reverse('%s:%s_%s_simple_history' %
                     (admin.site.name, app_label, model_name),
-                    [getattr(self, opts.pk.attname), self.history_id])
+                    args=(getattr(self, opts.pk.attname), self.history_id))
 
         def get_instance(self):
             return model(**{
@@ -252,7 +251,7 @@ class HistoricalRecords(object):
         if self.user_set_verbose_name:
             name = self.user_set_verbose_name
         else:
-            name = string_concat('historical ',
+            name = format_lazy('historical {}',
                                  smart_text(model._meta.verbose_name))
         meta_fields['verbose_name'] = name
         return meta_fields

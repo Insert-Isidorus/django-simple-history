@@ -190,7 +190,7 @@ class HistoricalRecordsTest(TestCase):
         lib = Library.objects.create()
         state = State.objects.create(library=lib)
         self.assertTrue(hasattr(lib, 'state_set'))
-        self.assertIsNone(state._meta.get_field('library').rel.related_name,
+        self.assertIsNone(state._meta.get_field('library').remote_field.related_name,
                           "the '+' shouldn't leak through to the original "
                           "model's field related_name")
 
@@ -515,7 +515,7 @@ class HistoryManagerTest(TestCase):
     def test_import_related(self):
         field_object = HistoricalChoice._meta.get_field('poll')
         try:
-            related_model = field_object.rel.related_model
+            related_model = field_object.remote_field.related_model
         except AttributeError:  # Django<1.8
             related_model = field_object.related.model
         self.assertEqual(related_model, HistoricalChoice)
@@ -523,7 +523,7 @@ class HistoryManagerTest(TestCase):
     def test_string_related(self):
         field_object = HistoricalState._meta.get_field('library')
         try:
-            related_model = field_object.rel.related_model
+            related_model = field_object.remote_field.related_model
         except AttributeError:  # Django<1.8
             related_model = field_object.related.model
         self.assertEqual(related_model, HistoricalState)

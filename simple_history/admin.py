@@ -6,8 +6,8 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.admin import helpers
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render
+from django.urls import reverse
 from django.utils.text import capfirst
 from django.utils.html import mark_safe
 from django.utils.translation import ugettext as _

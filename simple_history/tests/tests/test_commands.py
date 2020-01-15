@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from datetime import datetime
+from io import StringIO
 
-from six.moves import cStringIO as StringIO
 from django.test import TestCase
 from django.core import management
 

@@ -2,13 +2,13 @@ from __future__ import unicode_literals
 
 import unittest
 from datetime import datetime, timedelta
+from io import StringIO
 
 import django
 from django.contrib.auth import get_user_model
 from django.core import management
 from django.test import TestCase
 from simple_history import exceptions, register
-from six.moves import cStringIO as StringIO
 
 from ..tests.models import (Choice, InheritTracking1, InheritTracking2,
                             InheritTracking3, InheritTracking4, Poll,
@@ -58,7 +58,7 @@ class RegisterTest(TestCase):
         user = User.objects.create(username='voter')
         voter = Voter.objects.create(choice=choice, user=user)
         self.assertEqual(len(voter.history.all()), 1)
-        expected = 'Voter object changed by None as of '
+        expected = 'Voter object (1) changed by None as of '
         self.assertEqual(expected,
                          str(voter.history.all()[0])[:len(expected)])
 

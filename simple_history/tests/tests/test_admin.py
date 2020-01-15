@@ -6,10 +6,10 @@ from django.contrib.admin import AdminSite
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.test.utils import override_settings
 from django.test.client import RequestFactory
-from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.encoding import force_text
+from django.urls import reverse
 
 from simple_history.models import HistoricalRecords
 from simple_history.admin import SimpleHistoryAdmin, get_complete_version
@@ -161,7 +161,7 @@ class AdminSiteTest(WebTest):
         self.assertEqual(Poll.history.get().history_user, self.user)
 
         # Ensure polls saved on edit page in admin interface save correct user
-        change_page = changelist_page.click("Poll object")
+        change_page = changelist_page.click("Poll object", index=0)
         change_page.form.submit()
         self.assertEqual([p.history_user for p in Poll.history.all()],
                          [self.user, self.user])
@@ -201,8 +201,8 @@ class AdminSiteTest(WebTest):
 
     def test_middleware_saves_user(self):
         overridden_settings = {
-            'MIDDLEWARE_CLASSES':
-                settings.MIDDLEWARE_CLASSES +
+            'MIDDLEWARE':
+                settings.MIDDLEWARE +
                 ['simple_history.middleware.HistoryRequestMiddleware'],
         }
         with override_settings(**overridden_settings):
@@ -219,8 +219,8 @@ class AdminSiteTest(WebTest):
 
     def test_middleware_unsets_request(self):
         overridden_settings = {
-            'MIDDLEWARE_CLASSES':
-                settings.MIDDLEWARE_CLASSES +
+            'MIDDLEWARE':
+                settings.MIDDLEWARE +
                 ['simple_history.middleware.HistoryRequestMiddleware'],
         }
         with override_settings(**overridden_settings):
@@ -234,8 +234,8 @@ class AdminSiteTest(WebTest):
         # creating a new entry does not fail with a foreign key error.
 
         overridden_settings = {
-            'MIDDLEWARE_CLASSES':
-                settings.MIDDLEWARE_CLASSES +
+            'MIDDLEWARE':
+                settings.MIDDLEWARE +
                 ['simple_history.middleware.HistoryRequestMiddleware'],
         }
         with override_settings(**overridden_settings):
@@ -256,8 +256,8 @@ class AdminSiteTest(WebTest):
 
     def test_middleware_anonymous_user(self):
         overridden_settings = {
-            'MIDDLEWARE_CLASSES':
-                settings.MIDDLEWARE_CLASSES +
+            'MIDDLEWARE':
+                settings.MIDDLEWARE +
                 ['simple_history.middleware.HistoryRequestMiddleware'],
         }
         with override_settings(**overridden_settings):
